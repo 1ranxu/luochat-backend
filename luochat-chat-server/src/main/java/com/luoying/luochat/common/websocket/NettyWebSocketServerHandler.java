@@ -1,5 +1,8 @@
 package com.luoying.luochat.common.websocket;
 
+import cn.hutool.json.JSONUtil;
+import com.luoying.luochat.common.websocket.domain.enums.WSReqTypeEnum;
+import com.luoying.luochat.common.websocket.domain.vo.req.WSBaseReq;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,6 +20,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        // 监听握手完成事件
         if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
             System.out.println("握手完成");
         }
@@ -24,7 +28,24 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
+        // 获取消息
         String text = msg.text();
-        System.out.println(text);
+        // 转换为WSBaseReq请求对象
+        WSBaseReq wsBaseReq = JSONUtil.toBean(text, WSBaseReq.class);
+        // 进行判断
+        switch (WSReqTypeEnum.of(wsBaseReq.getType())) {
+            // 登录
+            case LOGIN:
+                System.out.println("请求二维码");
+                // 向前端写回消息
+                ctx.channel().writeAndFlush(new TextWebSocketFrame("二维码"));
+                break;
+            // 心跳检测
+            case HEARTBEAT:
+                break;
+            // 用户认证
+            case AUTHORIZE:
+                break;
+        }
     }
 }
