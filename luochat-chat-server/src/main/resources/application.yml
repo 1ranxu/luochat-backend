@@ -23,3 +23,11 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: true
+wx:
+  mp:
+    callback: ${luochat.wx.callback}
+    configs:
+      - appId: ${luochat.wx.appId} # 第一个公众号的appid
+        secret: ${luochat.wx.secret} # 公众号的appsecret
+        token: ${luochat.wx.token} # 接口配置里的Token值
+        aesKey: ${luochat.wx.aesKey} # 接口配置里的EncodingAESKey值
