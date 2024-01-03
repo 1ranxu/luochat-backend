@@ -1,8 +1,11 @@
 package com.luoying.luochat.common.websocket;
 
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.luoying.luochat.common.websocket.domain.enums.WSReqTypeEnum;
 import com.luoying.luochat.common.websocket.domain.vo.req.WSBaseReq;
+import com.luoying.luochat.common.websocket.service.WebSocketService;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,6 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+    private WebSocketService webSocketService;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        webSocketService = SpringUtil.getBean(WebSocketService.class);
+        // 保存连接
+        webSocketService.connect(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        userOffline(ctx.channel());
+    }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -30,9 +46,17 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
             if (event.state() == IdleState.READER_IDLE) {
                 System.out.println("读空闲");
                 // todo 用户下线
-                ctx.channel().close();
             }
         }
+    }
+
+    /**
+     * 用户下线统一处理
+     * @param channel
+     */
+    private void userOffline(Channel channel){
+        webSocketService.remove(channel);
+        channel.close();
     }
 
     @Override
@@ -45,9 +69,8 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         switch (WSReqTypeEnum.of(wsBaseReq.getType())) {
             // 登录
             case LOGIN:
-                System.out.println("请求二维码");
                 // 向前端写回消息
-                ctx.channel().writeAndFlush(new TextWebSocketFrame("二维码"));
+                webSocketService.handleLoginRequest(ctx.channel());
                 break;
             // 心跳检测
             case HEARTBEAT:

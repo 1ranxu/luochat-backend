@@ -1,7 +1,6 @@
 package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.user.domain.entity.User;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * <p>
@@ -11,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author <a href="https://github.com/1ranxu">luoying</a>
  * @since 2024-01-02
  */
-public interface IUserService extends IService<User> {
+public interface UserService {
 
+    Long register(User user);
 }

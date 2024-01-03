@@ -16,4 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDao extends ServiceImpl<UserMapper, User> {
 
+    public User getByOpneId(String openId) {
+        return lambdaQuery().eq(User::getOpenId, openId).one();
+    }
 }

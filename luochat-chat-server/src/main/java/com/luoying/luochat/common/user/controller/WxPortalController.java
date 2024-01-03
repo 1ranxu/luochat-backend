@@ -1,5 +1,6 @@
 package com.luoying.luochat.common.user.controller;
 
+import com.luoying.luochat.common.user.service.WXMsgService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -31,6 +32,15 @@ public class WxPortalController {
     @Resource
     private WxMpService wxMpService;
 
+    @Resource
+    private final WxMpService wxService;
+
+    @Resource
+    private final WxMpMessageRouter messageRouter;
+
+    @Resource
+    private WXMsgService wxMsgService;
+
     @GetMapping("/test")
     public String getQrCode(@RequestParam Integer code) throws WxErrorException {
         WxMpQrCodeTicket wxMpQrCodeTicket = wxMpService.getQrcodeService().
@@ -39,9 +49,6 @@ public class WxPortalController {
         System.out.println(url);
         return url;
     }
-
-    private final WxMpService wxService;
-    private final WxMpMessageRouter messageRouter;
 
 
     @GetMapping(produces = "text/plain;charset=utf-8")
@@ -69,7 +76,10 @@ public class WxPortalController {
         WxOAuth2AccessToken accessToken = wxMpService.getOAuth2Service().getAccessToken(code);
         WxOAuth2UserInfo userInfo = wxMpService.getOAuth2Service().getUserInfo(accessToken, "zh_CN");
         System.out.println(userInfo);
-        return null;
+        wxMsgService.authorize(userInfo);
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl("www.luochat.cn");
+        return redirectView;
     }
 
     @PostMapping(produces = "application/xml; charset=UTF-8")
