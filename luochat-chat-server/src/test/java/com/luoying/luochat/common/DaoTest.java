@@ -1,6 +1,9 @@
 package com.luoying.luochat.common;
 
+import cn.hutool.json.JSONUtil;
+import com.luoying.luochat.common.common.utils.JsonUtils;
 import com.luoying.luochat.common.common.utils.JwtUtils;
+import com.luoying.luochat.common.common.utils.RedisUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -9,6 +12,7 @@ import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -28,6 +32,7 @@ public class DaoTest {
 
     @Resource
     private JwtUtils jwtUtils;
+
 
     @Test
     public void testUserDao() {
@@ -51,5 +56,11 @@ public class DaoTest {
         System.out.println(jwtUtils.createToken(1L));
         Thread.sleep(1000);
         System.out.println(jwtUtils.createToken(1L));
+    }
+
+    @Test
+    public void testRedis() throws InterruptedException {
+        Long aLong = JsonUtils.toObj("1", Long.class);
+        System.out.println(aLong);
     }
 }
