@@ -1,9 +1,7 @@
 package com.luoying.luochat.common;
 
-import cn.hutool.json.JSONUtil;
 import com.luoying.luochat.common.common.utils.JsonUtils;
 import com.luoying.luochat.common.common.utils.JwtUtils;
-import com.luoying.luochat.common.common.utils.RedisUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -11,8 +9,9 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -32,6 +31,9 @@ public class DaoTest {
 
     @Resource
     private JwtUtils jwtUtils;
+
+    @Resource
+    private RedissonClient redissonClient;
 
 
     @Test
@@ -62,5 +64,15 @@ public class DaoTest {
     public void testRedis() throws InterruptedException {
         Long aLong = JsonUtils.toObj("1", Long.class);
         System.out.println(aLong);
+    }
+
+
+
+    @Test
+    public void testRedisson() {
+        RLock lock = redissonClient.getLock("key");
+        lock.lock();
+        System.out.println();
+        lock.unlock();
     }
 }
