@@ -24,8 +24,8 @@ public interface LoginService {
     /**
      * 如果token有效，返回uid
      *
-     * @param token
+     * @param oldToken
      * @return
      */
-    Long getValidUid(String token);
+    Long getValidUid(String oldToken);
 }

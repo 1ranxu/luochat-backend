@@ -4,6 +4,7 @@ import com.luoying.luochat.common.common.utils.JsonUtils;
 import com.luoying.luochat.common.common.utils.JwtUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.service.LoginService;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
@@ -34,6 +35,9 @@ public class DaoTest {
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private LoginService loginService;
 
 
     @Test
@@ -67,12 +71,18 @@ public class DaoTest {
     }
 
 
-
     @Test
     public void testRedisson() {
         RLock lock = redissonClient.getLock("key");
         lock.lock();
         System.out.println();
         lock.unlock();
+    }
+
+    @Test
+    public void testGetValidUid() {
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjExMDA4LCJjcmVhdGVUaW1lIjoxNzA0MzUyODAyfQ.pjHkg1N9EQJjx0oHW6B44TqmF02jPDh1pmfQuqyZzzg";
+        Long validUid = loginService.getValidUid(token);
+        System.out.println(validUid);
     }
 }
