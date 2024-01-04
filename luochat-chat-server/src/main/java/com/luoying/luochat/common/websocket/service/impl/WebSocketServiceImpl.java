@@ -53,10 +53,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     /**
      * 临时保存登录code和channel的映射关系
      */
-    private static final Cache<Integer, Channel> WAIT_LOGIN_MAP = Caffeine.newBuilder()
-            .maximumSize(MAXIMUM_SIZE)
-            .expireAfterWrite(DURATION)
-            .build();
+    private static final Cache<Integer, Channel> WAIT_LOGIN_MAP = Caffeine.newBuilder().maximumSize(MAXIMUM_SIZE).expireAfterWrite(DURATION).build();
 
     @Override
     public void connect(Channel channel) {
@@ -84,7 +81,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void scanLoginSuccess(Integer code, Long uid) {
         // 确认连接存储在本地
         Channel channel = WAIT_LOGIN_MAP.getIfPresent(code);
-        if (Objects.isNull(channel)){
+        if (Objects.isNull(channel)) {
             return;
         }
         User user = userDao.getById(uid);
@@ -92,17 +89,36 @@ public class WebSocketServiceImpl implements WebSocketService {
         WAIT_LOGIN_MAP.invalidate(code);
         // 调用登录模块获取token
         String token = loginService.login(uid);
-        // 用户登录
-        sendMsg(channel,WebSocketAdapter.buildResp(user,token));
+        // 用户登录成功
+        loginSuccess(channel, user, token);
     }
 
     @Override
     public void waitAuthorize(Integer code) {
         Channel channel = WAIT_LOGIN_MAP.getIfPresent(code);
-        if (Objects.isNull(channel)){
+        if (Objects.isNull(channel)) {
             return;
         }
-        sendMsg(channel,WebSocketAdapter.buildWaitAuthorizeResp());
+        sendMsg(channel, WebSocketAdapter.buildWaitAuthorizeResp());
+    }
+
+    @Override
+    public void authorize(Channel channel, String token) {
+        Long validUid = loginService.getValidUid(token);
+        if (Objects.nonNull(validUid)) {
+            User user = userDao.getById(validUid);
+            loginSuccess(channel, user, token);
+        } else {
+            sendMsg(channel, WebSocketAdapter.buildInvalidTokenResp());
+        }
+    }
+
+    private void loginSuccess(Channel channel, User user, String token) {
+        // 保存channel的uid
+        WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
+        wsChannelExtraDTO.setUid(user.getId());
+        // 推送用户登录成功消息
+        sendMsg(channel, WebSocketAdapter.buildResp(user, token));
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> resp) {

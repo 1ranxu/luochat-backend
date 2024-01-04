@@ -77,6 +77,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 break;
             // 用户认证
             case AUTHORIZE:
+                webSocketService.authorize(ctx.channel(),wsBaseReq.getData());
                 break;
         }
     }

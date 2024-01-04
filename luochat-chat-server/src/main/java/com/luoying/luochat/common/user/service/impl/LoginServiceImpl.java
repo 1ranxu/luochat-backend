@@ -48,7 +48,7 @@ public class LoginServiceImpl implements LoginService {
         if (Objects.isNull(uid)) {
             return null;
         }
-        String tokenInRedis = RedisUtils.get(getUserTokenKey(uid));
+        String tokenInRedis = RedisUtils.getStr(getUserTokenKey(uid));
         if (StrUtil.isBlank(tokenInRedis)) {
             return null;
         }
