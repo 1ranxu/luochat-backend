@@ -1,10 +1,12 @@
 package com.luoying.luochat.common;
 
+import com.luoying.luochat.common.common.config.ThreadPoolConfig;
 import com.luoying.luochat.common.common.utils.JsonUtils;
 import com.luoying.luochat.common.common.utils.JwtUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.service.LoginService;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
@@ -12,7 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
@@ -23,6 +27,7 @@ import javax.annotation.Resource;
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@Slf4j
 public class DaoTest {
     @Resource
     private UserDao userDao;
@@ -84,5 +89,22 @@ public class DaoTest {
         String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjExMDA4LCJjcmVhdGVUaW1lIjoxNzA0MzUyODAyfQ.pjHkg1N9EQJjx0oHW6B44TqmF02jPDh1pmfQuqyZzzg";
         Long validUid = loginService.getValidUid(token);
         System.out.println(validUid);
+    }
+
+    @Resource
+    @Qualifier(ThreadPoolConfig.LUOCHAT_EXECUTOR)
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    @Test
+    public void testThreadPoolTaskExecutor() throws InterruptedException {
+        threadPoolTaskExecutor.execute(() -> {
+            try {
+                log.info("111");
+                throw new RuntimeException("运行时异常了");
+            } catch (RuntimeException e) {
+                log.info("异常发生",e);
+            }
+        });
+        Thread.sleep(1000);
     }
 }
