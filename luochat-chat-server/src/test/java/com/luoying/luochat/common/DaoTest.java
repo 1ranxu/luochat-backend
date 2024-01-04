@@ -1,5 +1,6 @@
 package com.luoying.luochat.common;
 
+import com.luoying.luochat.common.common.utils.JwtUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -25,6 +26,9 @@ public class DaoTest {
     @Resource
     private WxMpService wxMpService;
 
+    @Resource
+    private JwtUtils jwtUtils;
+
     @Test
     public void testUserDao() {
         User user = userDao.getById(1);
@@ -40,5 +44,12 @@ public class DaoTest {
         WxMpQrCodeTicket wxMpQrCodeTicket = wxMpService.getQrcodeService().qrCodeCreateTmpTicket(1, 1000);
         String url = wxMpQrCodeTicket.getUrl();
         System.out.println(url);
+    }
+
+    @Test
+    public void testJWT() throws InterruptedException {
+        System.out.println(jwtUtils.createToken(1L));
+        Thread.sleep(1000);
+        System.out.println(jwtUtils.createToken(1L));
     }
 }

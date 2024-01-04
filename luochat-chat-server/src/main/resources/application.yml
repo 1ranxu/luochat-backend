@@ -31,3 +31,5 @@ wx:
         secret: ${luochat.wx.secret} # 公众号的appsecret
         token: ${luochat.wx.token} # 接口配置里的Token值
         aesKey: ${luochat.wx.aesKey} # 接口配置里的EncodingAESKey值
+jwt:
+  secret: ${luochat.jwt.secret}
