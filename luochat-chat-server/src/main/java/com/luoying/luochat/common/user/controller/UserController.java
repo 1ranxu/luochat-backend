@@ -1,8 +1,13 @@
 package com.luoying.luochat.common.user.controller;
 
 
-import org.springframework.stereotype.Controller;
+import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -12,9 +17,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author <a href="https://github.com/1ranxu">luoying</a>
  * @since 2024-01-02
  */
-@Controller
-@RequestMapping("/user")
+@RestController
+@RequestMapping("/capi/user")
+@Api(value = "用户相关接口")
 public class UserController {
 
+    @GetMapping("/userInfo")
+    @ApiOperation("获取用户个人信息")
+    public UserInfoResp getUserInfo(@RequestParam Long uid) {
+        return null;
+    }
 }
 
