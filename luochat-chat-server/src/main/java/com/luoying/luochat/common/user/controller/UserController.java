@@ -1,6 +1,7 @@
 package com.luoying.luochat.common.user.controller;
 
 
+import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/capi/user")
-@Api(value = "用户相关接口")
+@Api(tags = "用户相关接口")
 public class UserController {
 
     @GetMapping("/userInfo")
     @ApiOperation("获取用户个人信息")
-    public UserInfoResp getUserInfo(@RequestParam Long uid) {
+    public ApiResult<UserInfoResp> getUserInfo(@RequestParam Long uid) {
         return null;
     }
 }
