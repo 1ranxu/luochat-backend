@@ -1,5 +1,6 @@
 package com.luoying.luochat.common.websocket;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.luoying.luochat.common.websocket.domain.enums.WSReqTypeEnum;
@@ -13,8 +14,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,19 +39,19 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        // 监听握手完成事件
-        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {// 监听握手完成事件
             System.out.println("握手完成");
+            String token = NettyUtil.getValueInAttr(ctx.channel(), NettyUtil.TOKEN);
+            // 有些用户是第一次登录，没有token
+            if (StrUtil.isNotBlank(token)) {
+                webSocketService.authorize(ctx.channel(), token);
+            }
         } else if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
                 System.out.println("读空闲");
-                // todo 用户下线
+                userOffline(ctx.channel());
             }
-        } else if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
-            System.out.println("握手请求");
-            Attribute<Object> token1 = ctx.channel().attr(AttributeKey.valueOf("token"));
-            webSocketService.authorize(ctx.channel(), token1.get().toString());
         }
     }
 

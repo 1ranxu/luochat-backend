@@ -1,6 +1,6 @@
 package com.luoying.luochat.common.websocket;
 
-import com.luoying.luochat.common.websocket.service.handler.MyHandShakeHandler;
+import com.luoying.luochat.common.websocket.service.handler.MyTokenCollectHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -84,8 +84,8 @@ public class NettyWebSocketServer {
                          *  2. 这就是为什么当浏览器发送大量数据时，就会发出多次 http请求的原因
                          */
                         pipeline.addLast(new HttpObjectAggregator(8192));
-                        //保存用户ip
-                        // pipeline.addLast(new HttpHeadersHandler());
+                        //保存url中的token
+                        pipeline.addLast(new MyTokenCollectHandler());
                         /**
                          * 说明：
                          *  1. 对于 WebSocket，它的数据是以帧frame 的形式传递的；
@@ -94,8 +94,7 @@ public class NettyWebSocketServer {
                          *  4. WebSocketServerProtocolHandler 核心功能是把 http协议升级为 ws 协议，保持长连接；
                          *      是通过一个状态码 101 来切换的
                          */
-                        // pipeline.addLast(new WebSocketServerProtocolHandler("/"));
-                        pipeline.addLast(new MyHandShakeHandler());
+                        pipeline.addLast(new WebSocketServerProtocolHandler("/"));
                         // 自定义handler ，处理业务逻辑
                         pipeline.addLast(NETTY_WEB_SOCKET_SERVER_HANDLER);
                     }
