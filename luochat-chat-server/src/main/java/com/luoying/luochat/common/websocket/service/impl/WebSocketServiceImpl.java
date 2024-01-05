@@ -117,6 +117,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         // 保存channel的uid
         WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
         wsChannelExtraDTO.setUid(user.getId());
+        // todo 发送用户上线成功的事件，谁关心谁来处理
         // 推送用户登录成功消息
         sendMsg(channel, WebSocketAdapter.buildResp(user, token));
     }

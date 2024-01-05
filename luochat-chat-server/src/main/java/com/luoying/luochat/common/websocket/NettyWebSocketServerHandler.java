@@ -13,6 +13,8 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,14 +49,19 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 System.out.println("读空闲");
                 // todo 用户下线
             }
+        } else if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+            System.out.println("握手请求");
+            Attribute<Object> token1 = ctx.channel().attr(AttributeKey.valueOf("token"));
+            webSocketService.authorize(ctx.channel(), token1.get().toString());
         }
     }
 
     /**
      * 用户下线统一处理
+     *
      * @param channel
      */
-    private void userOffline(Channel channel){
+    private void userOffline(Channel channel) {
         webSocketService.remove(channel);
         channel.close();
     }
@@ -77,7 +84,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 break;
             // 用户认证
             case AUTHORIZE:
-                webSocketService.authorize(ctx.channel(),wsBaseReq.getData());
+                webSocketService.authorize(ctx.channel(), wsBaseReq.getData());
                 break;
         }
     }
