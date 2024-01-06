@@ -4,6 +4,8 @@ package com.luoying.luochat.common.user.controller;
 import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
 import com.luoying.luochat.common.common.utils.RequestHolder;
 import com.luoying.luochat.common.user.domain.vo.req.ModifyNameReq;
+import com.luoying.luochat.common.user.domain.vo.req.WearBadgeReq;
+import com.luoying.luochat.common.user.domain.vo.resp.BadgeResp;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import com.luoying.luochat.common.user.service.UserService;
 import io.swagger.annotations.Api;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -41,5 +44,18 @@ public class UserController {
         userService.modifyName(RequestHolder.get().getUid(), modifyNameReq.getName());
         return ApiResult.success(null);
     }
+
+    @GetMapping("/badges")
+    @ApiOperation("可选徽章预览")
+    public ApiResult<List<BadgeResp>> badges() {
+        return ApiResult.success(userService.badges(RequestHolder.get().getUid()));
+    }
+
+    @PutMapping("/wearBadge")
+    @ApiOperation("佩戴徽章")
+    public ApiResult<Void> wearBage(@Valid @RequestBody WearBadgeReq wearBadgeReq) {
+        return ApiResult.success(userService.wearBage(RequestHolder.get().getUid(),wearBadgeReq.getItemId()));
+    }
+
 }
 

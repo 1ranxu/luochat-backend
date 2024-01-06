@@ -1,18 +1,25 @@
 package com.luoying.luochat.common.user.service.impl;
 
 import com.luoying.luochat.common.common.utils.AssertUtil;
+import com.luoying.luochat.common.user.dao.ItemConfigDao;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
 import com.luoying.luochat.common.user.dao.UserDao;
+import com.luoying.luochat.common.user.domain.entity.ItemConfig;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.domain.entity.UserBackpack;
 import com.luoying.luochat.common.user.domain.enums.ItemEnum;
+import com.luoying.luochat.common.user.domain.enums.ItemTypeEnum;
+import com.luoying.luochat.common.user.domain.vo.resp.BadgeResp;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import com.luoying.luochat.common.user.service.UserService;
 import com.luoying.luochat.common.user.service.adapter.UserAdapter;
+import com.luoying.luochat.common.user.service.cache.ItemCache;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author 落樱的悔恨
@@ -25,6 +32,12 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private UserBackpackDao userBackpackDao;
+
+    @Resource
+    private ItemCache itemCache;
+
+    @Resource
+    private ItemConfigDao itemConfigDao;
 
     @Override
     @Transactional
@@ -48,14 +61,40 @@ public class UserServiceImpl implements UserService {
         User user = userDao.getByName(name);
         // 使用AssertUtil的isEmpty方法判断user是否为空，不为空就会抛出BusinessException
         // errorMsg就是isEmpty方法的第二个参数
-        AssertUtil.isEmpty(user,"名字重复，换个名字再尝试吧~~");
+        AssertUtil.isEmpty(user, "名字重复，换个名字再尝试吧~~");
         // 获取该用户第一个可用的改名卡，然后使用掉
         UserBackpack modifyNameItem = userBackpackDao.getFirstValidItem(uid, ItemEnum.MODIFY_NAME_CARD.getId());
-        AssertUtil.isNotEmpty(modifyNameItem,"无可用改名卡哦");
+        AssertUtil.isNotEmpty(modifyNameItem, "无可用改名卡哦");
         // 使用改名卡
         boolean success = userBackpackDao.useItem(modifyNameItem);
-        if (success){ // 改名
-            userDao.modifyName(uid,name);
+        if (success) { // 改名
+            userDao.modifyName(uid, name);
         }
+    }
+
+    @Override
+    public List<BadgeResp> badges(Long uid) {
+        // 查询所有徽章
+        List<ItemConfig> itemConfigs = itemCache.getByType(ItemTypeEnum.BADGE.getType());
+        // 查询用户拥有的徽章
+        List<Long> itemIds = itemConfigs.stream().map(ItemConfig::getId).collect(Collectors.toList());
+        List<UserBackpack> backpacks = userBackpackDao.getByItemIds(uid, itemIds);
+        // 查询用户佩戴的徽章
+        User user = userDao.getById(uid);
+
+        return UserAdapter.buildBadgesResp(itemConfigs, backpacks, user.getItemId());
+    }
+
+    @Override
+    public Void wearBage(Long uid, Long itemId) {
+        // 确保拥有徽章
+        UserBackpack validItem = userBackpackDao.getFirstValidItem(uid, itemId);
+        AssertUtil.isNotEmpty(validItem, "暂未获得该徽章哦~~");
+        // 确保这个物品是徽章
+        ItemConfig itemConfig = itemConfigDao.getById(itemId);
+        AssertUtil.equal(itemConfig.getType(), ItemTypeEnum.BADGE.getType(), "只有徽章才能佩戴，不要尝试佩戴奇怪的东西哦~~");
+        // 佩戴徽章
+        userDao.wearBadge(uid, itemId);
+        return null;
     }
 }

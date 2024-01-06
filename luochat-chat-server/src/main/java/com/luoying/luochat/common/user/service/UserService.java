@@ -1,7 +1,10 @@
 package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.vo.resp.BadgeResp;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
+
+import java.util.List;
 
 /**
  * <p>
@@ -18,4 +21,9 @@ public interface UserService {
     UserInfoResp getUserInfo(Long uid);
 
     void modifyName(Long uid, String name);
+
+    List<BadgeResp> badges(Long uid);
+
+    Void wearBage(Long uid, Long itemId);
+
 }
