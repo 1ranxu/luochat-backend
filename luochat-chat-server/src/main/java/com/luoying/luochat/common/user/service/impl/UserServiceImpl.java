@@ -1,5 +1,6 @@
 package com.luoying.luochat.common.user.service.impl;
 
+import com.luoying.luochat.common.common.exception.BusinessException;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @Author 落樱的悔恨
@@ -42,5 +44,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void modifyName(Long uid, String name) {
+        User user = userDao.getByName(name);
+        if (Objects.nonNull(user)){
+            throw new BusinessException("名字重复，换个名字再尝试吧~~");
+        }
     }
 }

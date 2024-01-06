@@ -32,6 +32,15 @@ public class GlobalExceptionHandler {
         return ApiResult.fail(CommonErrorEnum.PARAM_INVALID.getCode(), msg);
     }
 
+    /**
+     * 业务异常处理
+     */
+    @ExceptionHandler(value = BusinessException.class)
+    public ApiResult<?> handleBusinessException(BusinessException e) {
+        log.info("Business Exception! The reason is: {}",e.getMessage());
+        return ApiResult.fail(e.getErrorCode(),e.getErrorMsg());
+    }
+
     @ExceptionHandler(value = Throwable.class)
     public ApiResult<?> handleThrowable(Throwable throwable) {
         log.error("System Exception! The reason is: {}",throwable.getMessage());
