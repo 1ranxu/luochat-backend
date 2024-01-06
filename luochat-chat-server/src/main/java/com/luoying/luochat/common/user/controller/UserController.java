@@ -1,18 +1,17 @@
 package com.luoying.luochat.common.user.controller;
 
 
-import com.luoying.luochat.common.common.domain.dto.RequestInfo;
 import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
-import com.luoying.luochat.common.common.interceptor.TokenInterceptor;
 import com.luoying.luochat.common.common.utils.RequestHolder;
+import com.luoying.luochat.common.user.domain.vo.req.ModifyNameReq;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
+import com.luoying.luochat.common.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -27,13 +26,20 @@ import javax.servlet.http.HttpServletRequest;
 @Api(tags = "用户相关接口")
 public class UserController {
 
+    @Resource
+    private UserService userService;
+
     @GetMapping("/userInfo")
     @ApiOperation("获取用户个人信息")
     public ApiResult<UserInfoResp> getUserInfo() {
-        // 使用RequestHolder从ThreadLocal中取出requestInfo
-        RequestInfo requestInfo = RequestHolder.get();
-        System.out.println(requestInfo.getUid());
-        return null;
+        return ApiResult.success(userService.getUserInfo(RequestHolder.get().getUid()));
+    }
+
+    @PutMapping("/name")
+    @ApiOperation("修改用户名")
+    public ApiResult<Void> modifyName(@Valid @RequestBody ModifyNameReq modifyNameReq) {
+        userService.modifyName(RequestHolder.get().getUid(), modifyNameReq.getName());
+        return ApiResult.success(null);
     }
 }
 

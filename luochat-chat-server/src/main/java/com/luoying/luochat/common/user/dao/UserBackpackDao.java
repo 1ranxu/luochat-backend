@@ -1,9 +1,9 @@
 package com.luoying.luochat.common.user.dao;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.luoying.luochat.common.common.domain.enums.YesOrNoEnum;
 import com.luoying.luochat.common.user.domain.entity.UserBackpack;
 import com.luoying.luochat.common.user.mapper.UserBackpackMapper;
-import com.luoying.luochat.common.user.service.IUserBackpackService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,4 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserBackpackDao extends ServiceImpl<UserBackpackMapper, UserBackpack> {
 
+    public Integer getCountByItemId(Long uid, Long itemId) {
+        return lambdaQuery()
+                .eq(UserBackpack::getUid, uid)
+                .eq(UserBackpack::getItemId, itemId)
+                .eq(UserBackpack::getStatus, YesOrNoEnum.NO.getStatus())
+                .count();
+    }
 }

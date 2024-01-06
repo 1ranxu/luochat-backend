@@ -1,6 +1,7 @@
 package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 
 /**
  * <p>
@@ -13,4 +14,8 @@ import com.luoying.luochat.common.user.domain.entity.User;
 public interface UserService {
 
     Long register(User user);
+
+    UserInfoResp getUserInfo(Long uid);
+
+    void modifyName(Long uid, String name);
 }

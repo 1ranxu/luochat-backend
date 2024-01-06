@@ -1,6 +1,8 @@
 package com.luoying.luochat.common.user.service.adapter;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
 /**
@@ -17,5 +19,12 @@ public class UserAdapter {
                 .id(uid)
                 .name(userInfo.getNickname())
                 .avatar(userInfo.getHeadImgUrl()).build();
+    }
+
+    public static UserInfoResp buildUserInfoResp(User user, Integer modifyNameCount) {
+        UserInfoResp userInfoResp = new UserInfoResp();
+        BeanUtil.copyProperties(user, userInfoResp);
+        userInfoResp.setModifyNameChance(modifyNameCount);
+        return userInfoResp;
     }
 }
