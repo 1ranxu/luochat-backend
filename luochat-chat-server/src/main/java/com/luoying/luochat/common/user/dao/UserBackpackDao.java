@@ -24,4 +24,23 @@ public class UserBackpackDao extends ServiceImpl<UserBackpackMapper, UserBackpac
                 .eq(UserBackpack::getStatus, YesOrNoEnum.NO.getStatus())
                 .count();
     }
+
+    public UserBackpack getFirstValidItem(Long uid, Long itemId) {
+        return lambdaQuery()
+                .eq(UserBackpack::getUid, uid)
+                .eq(UserBackpack::getItemId, itemId)
+                .eq(UserBackpack::getStatus, YesOrNoEnum.NO.getStatus())
+                .orderByAsc(UserBackpack::getId)
+                .last("limit 1")
+                .one();
+    }
+
+    public boolean useItem(UserBackpack modifyNameItem) {
+        return lambdaUpdate()
+                .eq(UserBackpack::getUid, modifyNameItem.getUid())
+                .eq(UserBackpack::getItemId, modifyNameItem.getItemId())
+                .eq(UserBackpack::getStatus, YesOrNoEnum.NO.getStatus())
+                .set(UserBackpack::getStatus, YesOrNoEnum.YES)
+                .update();
+    }
 }

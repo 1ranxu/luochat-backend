@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Throwable.class)
     public ApiResult<?> handleThrowable(Throwable throwable) {
-        log.error("System Exception! The reason is: {}",throwable.getMessage());
+        log.error("System Exception! The reason is: {}",throwable.getMessage(),throwable);
         return ApiResult.fail(CommonErrorEnum.SYSTEM_ERROR);
     }
 }
