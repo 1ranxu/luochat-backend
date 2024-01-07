@@ -48,10 +48,10 @@ public class UserAdapter {
             return badgeResp;
         }).sorted(
                 Comparator
-                 // 先根据是否拥有排序，0否1是，会把未拥有的排到前面，所以需要反转一下顺序
-                .comparing(BadgeResp::getObtain,Comparator.reverseOrder())
-                 // 再根据是否佩戴排序，0否1是，会把未佩戴的排到前面，所以需要反转一下顺序
-                .thenComparing(BadgeResp::getWearing,Comparator.reverseOrder())
+                 // 先根据是否佩戴排序，让佩戴的展示在最前面，0否1是，会把未佩戴的排到前面，所以需要反转一下顺序
+                .comparing(BadgeResp::getWearing,Comparator.reverseOrder())
+                 // 再根据是否拥有排序，0否1是，会把未拥有的排到前面，所以需要反转一下顺序
+                .thenComparing(BadgeResp::getObtain,Comparator.reverseOrder())
         ).collect(Collectors.toList());
     }
 }

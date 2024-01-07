@@ -5,7 +5,10 @@ import com.luoying.luochat.common.common.utils.JsonUtils;
 import com.luoying.luochat.common.common.utils.JwtUtils;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.enums.IdempotentEnum;
+import com.luoying.luochat.common.user.domain.enums.ItemEnum;
 import com.luoying.luochat.common.user.service.LoginService;
+import com.luoying.luochat.common.user.service.UserBackpackService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -29,6 +32,7 @@ import javax.annotation.Resource;
 @RunWith(SpringRunner.class)
 @Slf4j
 public class DaoTest {
+    public static final long UID = 11008l;
     @Resource
     private UserDao userDao;
 
@@ -43,6 +47,9 @@ public class DaoTest {
 
     @Resource
     private LoginService loginService;
+
+    @Resource
+    private UserBackpackService userBackpackService;
 
 
     @Test
@@ -106,5 +113,10 @@ public class DaoTest {
             }
         });
         Thread.sleep(1000);
+    }
+
+    @Test
+    public void testAcquireItem(){
+        userBackpackService.acquireItem(UID, ItemEnum.REG_TOP10_BADGE.getId(), IdempotentEnum.UID,11008+"");
     }
 }
