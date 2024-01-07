@@ -1,0 +1,49 @@
+package com.luoying.luochat.common.common.service;
+
+import com.luoying.luochat.common.common.exception.BusinessException;
+import com.luoying.luochat.common.common.exception.CommonErrorEnum;
+import lombok.SneakyThrows;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+/**
+ * @Author 落樱的悔恨
+ * @Date 2024/1/7 13:53
+ */
+@Service
+public class LockServcie {
+    @Resource
+    private RedissonClient redissonClient;
+
+    @SneakyThrows
+    public <T> T executeWithLock(String key, int waitTime, TimeUnit timeUnit, Supplier<T> supplier) {
+        RLock lock = redissonClient.getLock(key);
+        boolean success = lock.tryLock(waitTime, timeUnit);
+        if (!success) {
+            throw new BusinessException(CommonErrorEnum.LOCK_LIMIT);
+        }
+        try {
+            return supplier.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @SneakyThrows
+    public <T> T executeWithLock(String key, Supplier<T> supplier) {
+        return executeWithLock(key, -1, TimeUnit.MICROSECONDS, supplier);
+    }
+
+    @SneakyThrows
+    public <T> T executeWithLock(String key, Runnable runnable) {
+        return executeWithLock(key, -1, TimeUnit.MICROSECONDS, () -> {
+            runnable.run();
+            return null;
+        });
+    }
+}

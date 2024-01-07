@@ -1,13 +1,11 @@
 package com.luoying.luochat.common.user.service.impl;
 
 import com.luoying.luochat.common.common.domain.enums.YesOrNoEnum;
-import com.luoying.luochat.common.common.utils.AssertUtil;
+import com.luoying.luochat.common.common.service.LockServcie;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
 import com.luoying.luochat.common.user.domain.entity.UserBackpack;
 import com.luoying.luochat.common.user.domain.enums.IdempotentEnum;
 import com.luoying.luochat.common.user.service.UserBackpackService;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,7 +18,7 @@ import java.util.Objects;
 @Service
 public class UserBackpackServiceImpl implements UserBackpackService {
     @Resource
-    private RedissonClient redissonClient;
+    private LockServcie lockServcie;
 
     @Resource
     private UserBackpackDao userBackpackDao;
@@ -30,10 +28,7 @@ public class UserBackpackServiceImpl implements UserBackpackService {
         // 组装幂等号
         String idempotent = getIdempotent(itemId, idempotentEnum, businessId);
         // 加锁
-        RLock lock = redissonClient.getLock("acquireItem_" + idempotent);
-        boolean b = lock.tryLock();
-        AssertUtil.isTrue(b, "请求太频繁了");
-        try {
+        lockServcie.executeWithLock("acquireItem_" + idempotent, () -> {// lockServcied的第三个重载方法
             // 幂等判断
             UserBackpack userBackpack = userBackpackDao.getbyIdempotent(idempotent);
             if (Objects.nonNull(userBackpack)) {
@@ -47,9 +42,7 @@ public class UserBackpackServiceImpl implements UserBackpackService {
                     .status(YesOrNoEnum.NO.getStatus())
                     .idempotent(idempotent).build();
             userBackpackDao.save(insert);
-        } finally {
-            lock.unlock();
-        }
+        });
     }
 
     /**
