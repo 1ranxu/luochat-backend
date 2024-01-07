@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 /**
  * @Author 落樱的悔恨
@@ -45,5 +44,16 @@ public class LockServcie {
             runnable.run();
             return null;
         });
+    }
+
+    @FunctionalInterface
+    public interface Supplier<T> {
+
+        /**
+         * Gets a result.
+         *
+         * @return a result
+         */
+        T get() throws Throwable;
     }
 }

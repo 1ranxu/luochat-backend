@@ -1,5 +1,6 @@
 package com.luoying.luochat.common.user.service.impl;
 
+import com.luoying.luochat.common.common.annotation.RedissonLock;
 import com.luoying.luochat.common.common.utils.AssertUtil;
 import com.luoying.luochat.common.user.dao.ItemConfigDao;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
@@ -57,6 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @RedissonLock(key = "#uid")
     public void modifyName(Long uid, String name) {
         User user = userDao.getByName(name);
         // 使用AssertUtil的isEmpty方法判断user是否为空，不为空就会抛出BusinessException
