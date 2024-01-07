@@ -1,6 +1,7 @@
 package com.luoying.luochat.common.user.service.impl;
 
 import com.luoying.luochat.common.common.annotation.RedissonLock;
+import com.luoying.luochat.common.common.event.UserRegisterEvent;
 import com.luoying.luochat.common.common.utils.AssertUtil;
 import com.luoying.luochat.common.user.dao.ItemConfigDao;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
@@ -15,6 +16,7 @@ import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import com.luoying.luochat.common.user.service.UserService;
 import com.luoying.luochat.common.user.service.adapter.UserAdapter;
 import com.luoying.luochat.common.user.service.cache.ItemCache;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +42,15 @@ public class UserServiceImpl implements UserService {
     @Resource
     private ItemConfigDao itemConfigDao;
 
+    @Resource
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Override
     @Transactional
     public Long register(User user) {
         userDao.save(user);
-        // todo 用户注册的事件
+        // 用户注册的事件
+        applicationEventPublisher.publishEvent(new UserRegisterEvent(this,user));
         return user.getId();
     }
 

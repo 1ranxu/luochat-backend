@@ -50,7 +50,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
                 System.out.println("读空闲");
-                userOffline(ctx.channel());
+                //userOffline(ctx.channel());
             }
         }
     }
