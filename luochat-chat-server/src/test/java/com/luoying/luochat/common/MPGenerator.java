@@ -51,14 +51,15 @@ public class MPGenerator {
         strategyConfig.setEntityLombokModel(true);
         //包，列的命名规则，使用驼峰规则
         strategyConfig.setNaming(NamingStrategy.underline_to_camel);
-//        strategyConfig.setTablePrefix("t_");
+        //strategyConfig.setTablePrefix("t_");
         strategyConfig.setColumnNaming(NamingStrategy.underline_to_camel);
         //字段和表注解
         strategyConfig.setEntityTableFieldAnnotationEnable(true);
         //todo 这里修改需要自动生成的表结构
         strategyConfig.setInclude(
-                "item_config",
-                "user_backpack"
+                "black",
+                "role",
+                "user_role"
         );
         //自动填充字段,在项目开发过程中,例如创建时间，修改时间,每次，都需要我们来指定，太麻烦了,设置为自动填充规则，就不需要我们赋值咯
         List<TableFill> list = new ArrayList<TableFill>();
