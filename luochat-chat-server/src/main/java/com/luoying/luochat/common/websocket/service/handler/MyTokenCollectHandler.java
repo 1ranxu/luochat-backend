@@ -1,11 +1,13 @@
 package com.luoying.luochat.common.websocket.service.handler;
 
 import cn.hutool.core.net.url.UrlBuilder;
+import cn.hutool.core.util.StrUtil;
 import com.luoying.luochat.common.websocket.NettyUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
 
+import java.net.InetSocketAddress;
 import java.util.Optional;
 
 /**
@@ -27,6 +29,15 @@ public class MyTokenCollectHandler extends ChannelInboundHandlerAdapter {
             tokenOptional.ifPresent(s -> NettyUtil.setValueToAttr(ctx.channel(), NettyUtil.TOKEN, s));
             // 还原request的路径
             request.setUri(urlBuilder.getPath().toString());
+            // 取用户的ip
+            String ip = request.headers().get("X-Real-IP");
+            if (StrUtil.isBlank(ip)) {
+                InetSocketAddress address = (InetSocketAddress) ctx.channel().remoteAddress();
+                ip = address.getAddress().getHostAddress();
+            }
+            // 保存到channel
+            NettyUtil.setValueToAttr(ctx.channel(), NettyUtil.IP, ip);
+            ctx.channel().pipeline().remove(this);
         }
         ctx.fireChannelRead(msg);
     }
