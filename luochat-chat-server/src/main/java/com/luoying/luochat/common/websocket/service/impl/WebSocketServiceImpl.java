@@ -4,10 +4,12 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.luoying.luochat.common.common.config.ThreadPoolConfig;
 import com.luoying.luochat.common.common.event.UserOnlineEvent;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.service.LoginService;
+import com.luoying.luochat.common.user.service.RoleService;
 import com.luoying.luochat.common.websocket.NettyUtil;
 import com.luoying.luochat.common.websocket.domain.dto.WSChannelExtraDTO;
 import com.luoying.luochat.common.websocket.domain.vo.resp.WSBaseResp;
@@ -18,8 +20,10 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.SneakyThrows;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,6 +51,13 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Resource
+    private RoleService roleService;
+
+    @Resource
+    @Qualifier(ThreadPoolConfig.WS_EXECUTOR)
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     /**
      * 管理所有用户的连接（已登录的用户/未登录的游客）
@@ -120,18 +131,28 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
     }
 
+    @Override
+    public void sendMsgToAll(WSBaseResp<?> msg) {
+        ONLINE_WS_MAP.forEach((channel, wsChannelExtraDTO) -> {
+            threadPoolTaskExecutor.execute(() -> {
+                sendMsg(channel, msg);
+            });
+
+        });
+    }
+
     private void loginSuccess(Channel channel, User user, String token) {
         // 保存channel和uid的映射关系
         WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
         wsChannelExtraDTO.setUid(user.getId());
         // 推送用户登录成功消息
-        sendMsg(channel, WebSocketAdapter.buildResp(user, token));
+        sendMsg(channel, WebSocketAdapter.buildResp(user, token, roleService.hasWhatPower(user.getId())));
         // 更新用户上线时间
         user.setLastOptTime(new Date());
         // 更新user的ipInfo
-        user.refreshIp(NettyUtil.getValueInAttr(channel,NettyUtil.IP));
+        user.refreshIp(NettyUtil.getValueInAttr(channel, NettyUtil.IP));
         // 发送用户上线成功的事件，谁关心谁来处理
-        applicationEventPublisher.publishEvent(new UserOnlineEvent(this,user));
+        applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> resp) {
