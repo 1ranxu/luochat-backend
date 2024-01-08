@@ -17,6 +17,6 @@ public class WSLoginSuccess {
     private String avatar;
     private String token;
     private String name;
-    // todo 用户权限 0普通用户 1超管
+    // 用户权限 0普通用户 1超级管理员 2普通管理员
     private Integer power;
 }

@@ -1,21 +1,28 @@
 package com.luoying.luochat.common.user.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.luoying.luochat.common.common.annotation.RedissonLock;
+import com.luoying.luochat.common.common.event.UserBlackEvent;
 import com.luoying.luochat.common.common.event.UserRegisterEvent;
 import com.luoying.luochat.common.common.utils.AssertUtil;
+import com.luoying.luochat.common.user.dao.BlackDao;
 import com.luoying.luochat.common.user.dao.ItemConfigDao;
 import com.luoying.luochat.common.user.dao.UserBackpackDao;
 import com.luoying.luochat.common.user.dao.UserDao;
+import com.luoying.luochat.common.user.domain.entity.Black;
 import com.luoying.luochat.common.user.domain.entity.ItemConfig;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.domain.entity.UserBackpack;
+import com.luoying.luochat.common.user.domain.enums.BlackTypeEnum;
 import com.luoying.luochat.common.user.domain.enums.ItemEnum;
 import com.luoying.luochat.common.user.domain.enums.ItemTypeEnum;
+import com.luoying.luochat.common.user.domain.vo.req.BlackReq;
 import com.luoying.luochat.common.user.domain.vo.resp.BadgeResp;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 import com.luoying.luochat.common.user.service.UserService;
 import com.luoying.luochat.common.user.service.adapter.UserAdapter;
 import com.luoying.luochat.common.user.service.cache.ItemCache;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +36,7 @@ import java.util.stream.Collectors;
  * @Date 2024/1/3 17:41
  */
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     @Resource
     private UserDao userDao;
@@ -44,6 +52,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Resource
+    private BlackDao blackDao;
 
     @Override
     @Transactional
@@ -104,5 +115,39 @@ public class UserServiceImpl implements UserService {
         // 佩戴徽章
         userDao.wearBadge(uid, itemId);
         return null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Void black(BlackReq blackReq) {
+        // 获取要拉黑的uid
+        Long uid = blackReq.getUid();
+        // 拉黑uid
+        Black black = new Black();
+        black.setType(BlackTypeEnum.UID.getType());
+        black.setTarget(uid.toString());
+        blackDao.save(black);
+        User user = userDao.getById(uid);
+        // 拉黑ip
+        blackIp(user.getIpInfo().getCreateIp());
+        blackIp(user.getIpInfo().getUpdateIp());
+        // 发送用户拉黑事件
+        applicationEventPublisher.publishEvent(new UserBlackEvent(this,user));
+        return null;
+    }
+
+    public void blackIp(String ip) {
+        if (StrUtil.isBlank(ip)) { // ip有可能为空
+            return;
+        }
+        try {
+            // 拉黑ip
+            Black black = new Black();
+            black.setType(BlackTypeEnum.IP.getType());
+            black.setTarget(ip);
+            blackDao.save(black);
+        } catch (Exception e) {
+            log.error("duplicate black ip:{}", ip);
+        }
     }
 }

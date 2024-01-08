@@ -1,5 +1,6 @@
 package com.luoying.luochat.common.common.config;
 
+import com.luoying.luochat.common.common.interceptor.BlackInterceptor;
 import com.luoying.luochat.common.common.interceptor.CollectorInterceptor;
 import com.luoying.luochat.common.common.interceptor.TokenInterceptor;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +22,15 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Resource
     private CollectorInterceptor collectorInterceptor;
 
+    @Resource
+    private BlackInterceptor blackInterceptor;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {// 注意拦截器的添加顺序
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/capi/**");
         registry.addInterceptor(collectorInterceptor)
+                .addPathPatterns("/capi/**");
+        registry.addInterceptor(blackInterceptor)
                 .addPathPatterns("/capi/**");
     }
 }

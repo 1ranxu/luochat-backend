@@ -1,6 +1,7 @@
 package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.vo.req.BlackReq;
 import com.luoying.luochat.common.user.domain.vo.resp.BadgeResp;
 import com.luoying.luochat.common.user.domain.vo.resp.UserInfoResp;
 
@@ -26,4 +27,5 @@ public interface UserService {
 
     Void wearBage(Long uid, Long itemId);
 
+    Void black(BlackReq blackReq);
 }
