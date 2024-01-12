@@ -1,5 +1,7 @@
 package com.luoying.luochat.common.user.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luoying.luochat.common.user.domain.entity.UserApply;
 import com.luoying.luochat.common.user.domain.enums.ApplyStatusEnum;
@@ -7,6 +9,9 @@ import com.luoying.luochat.common.user.domain.enums.ApplyTypeEnum;
 import com.luoying.luochat.common.user.mapper.UserApplyMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+import static com.luoying.luochat.common.user.domain.enums.ApplyReadStatusEnum.READ;
 import static com.luoying.luochat.common.user.domain.enums.ApplyReadStatusEnum.UNREAD;
 
 /**
@@ -52,6 +57,34 @@ public class UserApplyDao extends ServiceImpl<UserApplyMapper, UserApply> {
     public void agree(Long applyId) {
         lambdaUpdate().set(UserApply::getStatus, ApplyStatusEnum.AGREE.getCode())
                 .eq(UserApply::getId, applyId)
+                .update();
+    }
+
+    /**
+     * 分页查询user_apply表中申请目标为自己的记录，根据申请时间倒序排序
+     * @param uid
+     * @param page
+     * @return
+     */
+    public IPage<UserApply> friendApplyPage(Long uid, Page page) {
+        return lambdaQuery()
+                .eq(UserApply::getTargetId, uid)
+                .eq(UserApply::getType, ApplyTypeEnum.ADD_FRIEND.getCode())
+                .orderByDesc(UserApply::getCreateTime)
+                .page(page);
+    }
+
+    /**
+     * 把目标用户为自己且未读的申请记录设置为已读状态
+     * @param uid
+     * @param applyIds
+     */
+    public void readApplications(Long uid, List<Long> applyIds) {
+        lambdaUpdate()
+                .eq(UserApply::getTargetId, uid)
+                .eq(UserApply::getReadStatus, UNREAD.getCode())
+                .set(UserApply::getReadStatus, READ.getCode())
+                .in(UserApply::getId, applyIds)
                 .update();
     }
 }

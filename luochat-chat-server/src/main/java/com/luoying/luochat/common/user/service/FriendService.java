@@ -1,10 +1,13 @@
 package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
+import com.luoying.luochat.common.common.domain.vo.req.PageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
+import com.luoying.luochat.common.common.domain.vo.resp.PageBaseResp;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendApplyResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
@@ -43,6 +46,14 @@ public interface FriendService {
      * @return {@link FriendUnreadResp}
      */
     FriendUnreadResp unread(Long uid);
+
+    /**
+     * 分页查询好友申请
+     *
+     * @param request 请求
+     * @return {@link PageBaseResp}<{@link FriendApplyResp}>
+     */
+    PageBaseResp<FriendApplyResp> pageApplyFriend(Long uid, PageBaseReq request);
 
     /**
      * 获取好友列表

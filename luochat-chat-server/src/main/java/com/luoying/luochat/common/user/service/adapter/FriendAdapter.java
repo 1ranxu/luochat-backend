@@ -7,6 +7,7 @@ import com.luoying.luochat.common.user.domain.enums.ApplyReadStatusEnum;
 import com.luoying.luochat.common.user.domain.enums.ApplyStatusEnum;
 import com.luoying.luochat.common.user.domain.enums.ApplyTypeEnum;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendApplyResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 
 import java.util.List;
@@ -61,5 +62,24 @@ public class FriendAdapter {
         userApplyNew.setReadStatus(ApplyReadStatusEnum.UNREAD.getCode());
         // 返回
         return userApplyNew;
+    }
+
+    public static List<FriendApplyResp> buildFriendApplyList(List<UserApply> records) {
+        // 构造好友申请列表
+        return records.stream().map(userApply -> {
+            // 构造好友申请
+            FriendApplyResp friendApplyResp = new FriendApplyResp();
+            // 设置申请人id
+            friendApplyResp.setUid(userApply.getUid());
+            // 设置申请类型
+            friendApplyResp.setType(userApply.getType());
+            // 设置申请id
+            friendApplyResp.setApplyId(userApply.getId());
+            // 设置申请消息
+            friendApplyResp.setMsg(userApply.getMsg());
+            // 设置申请状态
+            friendApplyResp.setStatus(userApply.getStatus());
+            return friendApplyResp;
+        }).collect(Collectors.toList());
     }
 }

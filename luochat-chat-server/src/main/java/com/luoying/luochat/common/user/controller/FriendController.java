@@ -2,12 +2,15 @@ package com.luoying.luochat.common.user.controller;
 
 
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
+import com.luoying.luochat.common.common.domain.vo.req.PageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
+import com.luoying.luochat.common.common.domain.vo.resp.PageBaseResp;
 import com.luoying.luochat.common.common.utils.RequestHolder;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendApplyResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
@@ -68,6 +71,15 @@ public class FriendController {
         Long uid = RequestHolder.get().getUid();
         // 根据查询登录用户的申请未读数
         return ApiResult.success(friendService.unread(uid));
+    }
+
+    @GetMapping("/apply/page")
+    @ApiOperation("好友申请列表")
+    public ApiResult<PageBaseResp<FriendApplyResp>> page(@Valid PageBaseReq request) {
+        // 获取当前登录用户uid
+        Long uid = RequestHolder.get().getUid();
+        // 根据uid，request查询好友申请列表
+        return ApiResult.success(friendService.pageApplyFriend(uid, request));
     }
 
     @GetMapping("/page")

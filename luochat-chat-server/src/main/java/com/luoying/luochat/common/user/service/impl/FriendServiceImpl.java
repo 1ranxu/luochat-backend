@@ -1,10 +1,14 @@
 package com.luoying.luochat.common.user.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import com.luoying.luochat.common.chat.service.RoomService;
 import com.luoying.luochat.common.common.annotation.RedissonLock;
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
+import com.luoying.luochat.common.common.domain.vo.req.PageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
+import com.luoying.luochat.common.common.domain.vo.resp.PageBaseResp;
 import com.luoying.luochat.common.common.event.UserApplyEvent;
 import com.luoying.luochat.common.common.utils.AssertUtil;
 import com.luoying.luochat.common.user.dao.UserApplyDao;
@@ -18,6 +22,7 @@ import com.luoying.luochat.common.user.domain.enums.ApplyStatusEnum;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendApplyResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
@@ -128,13 +133,36 @@ public class FriendServiceImpl implements FriendService {
 
     /**
      * 申请未读数
-     *
-     * @return {@link FriendUnreadResp}
      */
     @Override
     public FriendUnreadResp unread(Long uid) {
         Integer unReadCount = userApplyDao.getUnReadCount(uid);
         return new FriendUnreadResp(unReadCount);
+    }
+
+    /**
+     * 分页查询好友申请
+     */
+    @Override
+    public PageBaseResp<FriendApplyResp> pageApplyFriend(Long uid, PageBaseReq request) {
+        // 分页查询user_apply表中申请目标为自己的记录
+        IPage<UserApply> userApplyIPage = userApplyDao.friendApplyPage(uid, request.plusPage());
+        // 简单校验
+        if (CollectionUtil.isEmpty(userApplyIPage.getRecords())) {
+            return PageBaseResp.empty();
+        }
+        // 将这些申请记录设置为已读
+        readApplications(uid, userApplyIPage);
+        // 返回好友申请列表
+        return PageBaseResp.init(userApplyIPage, FriendAdapter.buildFriendApplyList(userApplyIPage.getRecords()));
+    }
+    private void readApplications(Long uid, IPage<UserApply> userApplyIPage) {
+        // 遍历userApplyIPage获取所有的申请id
+        List<Long> applyIds = userApplyIPage.getRecords()
+                .stream().map(UserApply::getId)
+                .collect(Collectors.toList());
+        // 把目标用户为自己且未读的申请记录设置为已读状态
+        userApplyDao.readApplications(uid, applyIds);
     }
 
     @Override
