@@ -6,6 +6,8 @@ import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 用户表 服务实现类
@@ -40,5 +42,18 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
                 .eq(User::getId,uid)
                 .set(User::getStatus, YesOrNoEnum.YES.getStatus())
                 .update();
+    }
+
+    /**
+     * 使用uids集合查询用户，并根据
+     * @param uids
+     * @return
+     */
+    public List<User> getFriendList(List<Long> uids) {
+        return lambdaQuery()
+                .in(User::getId, uids)
+                .select(User::getId, User::getActiveStatus, User::getName, User::getAvatar)
+                .list();
+
     }
 }

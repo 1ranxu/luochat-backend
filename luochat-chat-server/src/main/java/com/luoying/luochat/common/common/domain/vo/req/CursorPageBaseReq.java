@@ -30,8 +30,9 @@ public class CursorPageBaseReq {
     @ApiModelProperty("游标（初始为null，后续请求附带上次翻页的游标）")
     private String cursor;
 
+    // 把前端分页请求快速转成内部数据库查询的分页对象
     public Page plusPage() {
-        return new Page(1, this.pageSize);
+        return new Page(1, this.pageSize,false);
     }
 
     @JsonIgnore

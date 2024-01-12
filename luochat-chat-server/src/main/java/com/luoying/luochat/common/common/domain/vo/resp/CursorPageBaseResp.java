@@ -32,8 +32,11 @@ public class CursorPageBaseResp<T> {
 
     public static <T> CursorPageBaseResp<T> init(CursorPageBaseResp cursorPage, List<T> list) {
         CursorPageBaseResp<T> cursorPageBaseResp = new CursorPageBaseResp<T>();
+        // 设置是否最后一页
         cursorPageBaseResp.setIsLast(cursorPage.getIsLast());
+        // 设置数据
         cursorPageBaseResp.setList(list);
+        // 设置游标
         cursorPageBaseResp.setCursor(cursorPage.getCursor());
         return cursorPageBaseResp;
     }
