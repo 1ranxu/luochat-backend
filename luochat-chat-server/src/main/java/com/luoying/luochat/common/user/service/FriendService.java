@@ -7,6 +7,7 @@ import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
 
 /**
  * @description : 好友
@@ -35,6 +36,13 @@ public interface FriendService {
      * @param request 请求
      */
     void applyApprove(Long uid, FriendApproveReq request);
+
+    /**
+     * 申请未读数
+     *
+     * @return {@link FriendUnreadResp}
+     */
+    FriendUnreadResp unread(Long uid);
 
     /**
      * 获取好友列表

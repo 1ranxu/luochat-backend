@@ -10,6 +10,7 @@ import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
 import com.luoying.luochat.common.user.service.FriendService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,7 +46,9 @@ public class FriendController {
     @PostMapping("/apply")
     @ApiOperation("申请好友")
     public ApiResult<Void> apply(@Valid @RequestBody FriendApplyReq request) {
+        // 获取当前登录用户uid
         Long uid = RequestHolder.get().getUid();
+        // 根据uid, request申请好友
         friendService.apply(uid, request);
         return ApiResult.success();
     }
@@ -53,8 +56,18 @@ public class FriendController {
     @PutMapping("/apply")
     @ApiOperation("审批同意")
     public ApiResult<Void> applyApprove(@Valid @RequestBody FriendApproveReq request) {
+        // 根据uid, request审批同意申请
         friendService.applyApprove(RequestHolder.get().getUid(), request);
         return ApiResult.success();
+    }
+
+    @GetMapping("/apply/unread")
+    @ApiOperation("申请未读数")
+    public ApiResult<FriendUnreadResp> unread() {
+        // 获取当前登录用户uid
+        Long uid = RequestHolder.get().getUid();
+        // 根据查询登录用户的申请未读数
+        return ApiResult.success(friendService.unread(uid));
     }
 
     @GetMapping("/page")

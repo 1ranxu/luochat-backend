@@ -20,6 +20,7 @@ import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendUnreadResp;
 import com.luoying.luochat.common.user.service.FriendService;
 import com.luoying.luochat.common.user.service.adapter.FriendAdapter;
 import lombok.extern.slf4j.Slf4j;
@@ -123,6 +124,17 @@ public class FriendServiceImpl implements FriendService {
         // 创建一个聊天房间
         RoomFriend roomFriend = roomService.createFriendRoom(Arrays.asList(uid, userApply.getUid()));
         // todo 发送一条同意消息。。我们已经是好友了，开始聊天吧
+    }
+
+    /**
+     * 申请未读数
+     *
+     * @return {@link FriendUnreadResp}
+     */
+    @Override
+    public FriendUnreadResp unread(Long uid) {
+        Integer unReadCount = userApplyDao.getUnReadCount(uid);
+        return new FriendUnreadResp(unReadCount);
     }
 
     @Override
