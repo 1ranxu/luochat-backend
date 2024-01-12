@@ -56,6 +56,14 @@ public interface FriendService {
     PageBaseResp<FriendApplyResp> pageApplyFriend(Long uid, PageBaseReq request);
 
     /**
+     * 删除好友
+     *
+     * @param uid       uid
+     * @param friendUid 朋友uid
+     */
+    void deleteFriend(Long uid, Long friendUid);
+
+    /**
      * 获取好友列表
      * @param uid
      * @param request

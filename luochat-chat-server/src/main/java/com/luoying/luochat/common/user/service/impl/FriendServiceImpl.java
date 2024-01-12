@@ -156,6 +156,30 @@ public class FriendServiceImpl implements FriendService {
         // 返回好友申请列表
         return PageBaseResp.init(userApplyIPage, FriendAdapter.buildFriendApplyList(userApplyIPage.getRecords()));
     }
+
+    /**
+     * 删除好友
+     *
+     * @param uid       uid
+     * @param friendUid 朋友uid
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteFriend(Long uid, Long friendUid) {
+        List<UserFriend> userFriends = userFriendDao.getUserFriend(uid, friendUid);
+        // 简单校验
+        if (CollectionUtil.isEmpty(userFriends)) {
+            log.info("没有好友关系：{},{}", uid, friendUid);
+            return;
+        }
+        // 遍历userFriends，获取记录的id集合
+        List<Long> friendRecordIds = userFriends.stream().map(UserFriend::getId).collect(Collectors.toList());
+        // 根据id集合逻辑删除记录
+        userFriendDao.removeByIds(friendRecordIds);
+        // 禁用房间
+        roomService.disableFriendRoom(Arrays.asList(uid, friendUid));
+    }
+
     private void readApplications(Long uid, IPage<UserApply> userApplyIPage) {
         // 遍历userApplyIPage获取所有的申请id
         List<Long> applyIds = userApplyIPage.getRecords()

@@ -54,6 +54,16 @@ public class RoomServiceImpl implements RoomService {
         return roomFriend;
     }
 
+    @Override
+    public void disableFriendRoom(List<Long> uidList) {
+        AssertUtil.isNotEmpty(uidList, "房间创建失败，好友数量不对");
+        AssertUtil.equal(uidList.size(), 2, "房间创建失败，好友数量不对");
+        // 生成roomKey
+        String key = ChatAdapter.generateRoomKey(uidList);
+        // 根据roomKey禁用房间
+        roomFriendDao.disableRoom(key);
+    }
+
 
     private RoomFriend createFriendRoom(Long roomId, List<Long> uidList) {
         // 根据roomId，uidList构建roomFriend

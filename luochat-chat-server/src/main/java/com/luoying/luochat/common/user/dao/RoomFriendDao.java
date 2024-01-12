@@ -33,5 +33,16 @@ public class RoomFriendDao extends ServiceImpl<RoomFriendMapper, RoomFriend>  {
                 .update();
     }
 
+    /**
+     * 禁用房间
+     * @param key
+     */
+    public void disableRoom(String key) {
+        lambdaUpdate()
+                .eq(RoomFriend::getRoomKey, key)
+                .set(RoomFriend::getStatus, NormalOrNoEnum.NOT_NORMAL.getStatus())
+                .update();
+    }
+
 
 }

@@ -47,4 +47,21 @@ public class UserFriendDao extends ServiceImpl<UserFriendMapper, UserFriend> {
         return CursorUtils.getCursorPageByMysql(this, cursorPageBaseReq,
                 wrapper -> wrapper.eq(UserFriend::getUid, uid), UserFriend::getId);
     }
+
+    /**
+     * 查看双方是否互相都有好友关系
+     * @param uid
+     * @param friendUid
+     * @return
+     */
+    public List<UserFriend> getUserFriend(Long uid, Long friendUid) {
+        return lambdaQuery()
+                .eq(UserFriend::getUid, uid)
+                .eq(UserFriend::getFriendUid, friendUid)
+                .or()
+                .eq(UserFriend::getFriendUid, uid)
+                .eq(UserFriend::getUid, friendUid)
+                .select(UserFriend::getId)
+                .list();
+    }
 }

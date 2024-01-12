@@ -17,4 +17,9 @@ public interface RoomService {
      * 创建一个单聊房间
      */
     RoomFriend createFriendRoom(List<Long> uidList);
+
+    /**
+     * 禁用一个单聊房间
+     */
+    void disableFriendRoom(List<Long> uidList);
 }

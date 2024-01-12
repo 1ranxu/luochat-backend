@@ -10,6 +10,7 @@ import com.luoying.luochat.common.common.utils.RequestHolder;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
+import com.luoying.luochat.common.user.domain.vo.req.FriendDeleteReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendApplyResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
@@ -80,6 +81,16 @@ public class FriendController {
         Long uid = RequestHolder.get().getUid();
         // 根据uid，request查询好友申请列表
         return ApiResult.success(friendService.pageApplyFriend(uid, request));
+    }
+
+    @DeleteMapping()
+    @ApiOperation("删除好友")
+    public ApiResult<Void> delete(@Valid @RequestBody FriendDeleteReq request) {
+        // 当前登录用户的uid
+        Long uid = RequestHolder.get().getUid();
+        // 根据uid和request删除好友
+        friendService.deleteFriend(uid, request.getTargetUid());
+        return ApiResult.success();
     }
 
     @GetMapping("/page")
