@@ -5,6 +5,7 @@ import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
 import com.luoying.luochat.common.common.utils.RequestHolder;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
@@ -12,9 +13,7 @@ import com.luoying.luochat.common.user.service.FriendService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -40,6 +39,14 @@ public class FriendController {
         Long uid = RequestHolder.get().getUid();
         // 批量判断是否是自己好友
         return ApiResult.success(friendService.check(uid, request));
+    }
+
+    @PostMapping("/apply")
+    @ApiOperation("申请好友")
+    public ApiResult<Void> apply(@Valid @RequestBody FriendApplyReq request) {
+        Long uid = RequestHolder.get().getUid();
+        friendService.apply(uid, request);
+        return ApiResult.success();
     }
 
     @GetMapping("/page")

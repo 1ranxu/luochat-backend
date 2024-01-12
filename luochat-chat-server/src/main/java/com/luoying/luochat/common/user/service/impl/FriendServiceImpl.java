@@ -2,21 +2,30 @@ package com.luoying.luochat.common.user.service.impl;
 
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
+import com.luoying.luochat.common.common.event.UserApplyEvent;
+import com.luoying.luochat.common.common.utils.AssertUtil;
+import com.luoying.luochat.common.user.dao.UserApplyDao;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.dao.UserFriendDao;
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.entity.UserApply;
 import com.luoying.luochat.common.user.domain.entity.UserFriend;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 import com.luoying.luochat.common.user.service.FriendService;
 import com.luoying.luochat.common.user.service.adapter.FriendAdapter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,11 +37,18 @@ import java.util.stream.Collectors;
 @Service
 public class FriendServiceImpl implements FriendService {
 
-    @Autowired
+    @Resource
     private UserFriendDao userFriendDao;
 
-    @Autowired
+    @Resource
     private UserDao userDao;
+
+    @Resource
+    private UserApplyDao userApplyDao;
+
+
+    @Resource
+    private ApplicationEventPublisher applicationEventPublisher;
 
 
     @Override
@@ -52,6 +68,31 @@ public class FriendServiceImpl implements FriendService {
         }).collect(Collectors.toList());
         // 封装返回
         return new FriendCheckResp(friendCheckList);
+    }
+
+    @Override
+    public void apply(Long uid, FriendApplyReq request) {
+        // 是否已经有好友关系
+        UserFriend friend = userFriendDao.getByFriend(uid, request.getTargetUid());
+        AssertUtil.isEmpty(friend, "你们已经是好友了");
+        // 是否已经有自己的待审批的申请记录
+        UserApply selfApproving = userApplyDao.getFriendApproving(uid, request.getTargetUid());
+        if (Objects.nonNull(selfApproving)) {
+            log.info("已有好友申请记录,uid:{}, targetId:{}", uid, request.getTargetUid());
+            return;
+        }
+        // 是否已经有别人请求自己的待审批的申请记录(防止别人请求我，我又去请求别人，没必要生再成一条申请记录)
+        UserApply friendApproving = userApplyDao.getFriendApproving(request.getTargetUid(), uid);
+        if (Objects.nonNull(friendApproving)) {// 存在，直接帮我同意别人的请求
+            ((FriendService) AopContext.currentProxy()).applyApprove(uid, new FriendApproveReq(friendApproving.getId()));
+            return;
+        }
+        // 构造好友申请
+        UserApply insert = FriendAdapter.buildFriendApply(uid, request);
+        // 保存好友申请
+        userApplyDao.save(insert);
+        // 发送申请事件
+        applicationEventPublisher.publishEvent(new UserApplyEvent(this, insert));
     }
 
     @Override

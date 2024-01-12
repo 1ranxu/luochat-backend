@@ -1,7 +1,12 @@
 package com.luoying.luochat.common.user.service.adapter;
 
 import com.luoying.luochat.common.user.domain.entity.User;
+import com.luoying.luochat.common.user.domain.entity.UserApply;
 import com.luoying.luochat.common.user.domain.entity.UserFriend;
+import com.luoying.luochat.common.user.domain.enums.ApplyReadStatusEnum;
+import com.luoying.luochat.common.user.domain.enums.ApplyStatusEnum;
+import com.luoying.luochat.common.user.domain.enums.ApplyTypeEnum;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 
 import java.util.List;
@@ -37,5 +42,24 @@ public class FriendAdapter {
             // 返回
             return resp;
         }).collect(Collectors.toList());
+    }
+
+    public static UserApply buildFriendApply(Long uid, FriendApplyReq request) {
+        // 构建好友申请
+        UserApply userApplyNew = new UserApply();
+        // 设置申请人uid
+        userApplyNew.setUid(uid);
+        // 设置申请人的申请消息
+        userApplyNew.setMsg(request.getMsg());
+        // 设置申请类型为添加好友
+        userApplyNew.setType(ApplyTypeEnum.ADD_FRIEND.getCode());
+        // 设置申请的目标用户
+        userApplyNew.setTargetId(request.getTargetUid());
+        // 设置申请状态为待审批状态
+        userApplyNew.setStatus(ApplyStatusEnum.WAIT_APPROVAL.getCode());
+        // 设置申请的阅读状态为未读状态
+        userApplyNew.setReadStatus(ApplyReadStatusEnum.UNREAD.getCode());
+        // 返回
+        return userApplyNew;
     }
 }

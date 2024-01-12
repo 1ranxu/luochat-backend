@@ -2,6 +2,7 @@ package com.luoying.luochat.common.user.service;
 
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
@@ -17,6 +18,14 @@ public interface FriendService {
      * @return {@link FriendCheckResp}
      */
     FriendCheckResp check(Long uid, FriendCheckReq request);
+
+    /**
+     * 申请好友
+     *
+     * @param request 请求
+     * @param uid     uid
+     */
+    void apply(Long uid, FriendApplyReq request);
 
     /**
      * 获取好友列表

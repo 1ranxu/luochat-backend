@@ -24,9 +24,20 @@ public class UserFriendDao extends ServiceImpl<UserFriendMapper, UserFriend> {
      * 根据uidList查询当前登录用户的好友
      */
     public List<UserFriend> getByFriends(Long uid, List<Long> uidList) {
-        return lambdaQuery().eq(UserFriend::getUid, uid)
+        return lambdaQuery()
+                .eq(UserFriend::getUid, uid)
                 .in(UserFriend::getFriendUid, uidList)
                 .list();
+    }
+
+    /**
+     * 查询当前登录用户与目标用户是否为好友关系
+     */
+    public UserFriend getByFriend(Long uid, Long targetUid) {
+        return lambdaQuery()
+                .eq(UserFriend::getUid, uid)
+                .eq(UserFriend::getFriendUid, targetUid)
+                .one();
     }
 
     /**
