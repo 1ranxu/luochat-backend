@@ -6,6 +6,7 @@ import com.luoying.luochat.common.common.domain.vo.resp.ApiResult;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
 import com.luoying.luochat.common.common.utils.RequestHolder;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
+import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
@@ -46,6 +47,13 @@ public class FriendController {
     public ApiResult<Void> apply(@Valid @RequestBody FriendApplyReq request) {
         Long uid = RequestHolder.get().getUid();
         friendService.apply(uid, request);
+        return ApiResult.success();
+    }
+
+    @PutMapping("/apply")
+    @ApiOperation("审批同意")
+    public ApiResult<Void> applyApprove(@Valid @RequestBody FriendApproveReq request) {
+        friendService.applyApprove(RequestHolder.get().getUid(), request);
         return ApiResult.success();
     }
 

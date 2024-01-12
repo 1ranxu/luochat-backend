@@ -1,5 +1,8 @@
 package com.luoying.luochat.common.user.service.impl;
 
+import com.google.common.collect.Lists;
+import com.luoying.luochat.common.chat.service.RoomService;
+import com.luoying.luochat.common.common.annotation.RedissonLock;
 import com.luoying.luochat.common.common.domain.vo.req.CursorPageBaseReq;
 import com.luoying.luochat.common.common.domain.vo.resp.CursorPageBaseResp;
 import com.luoying.luochat.common.common.event.UserApplyEvent;
@@ -7,9 +10,11 @@ import com.luoying.luochat.common.common.utils.AssertUtil;
 import com.luoying.luochat.common.user.dao.UserApplyDao;
 import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.dao.UserFriendDao;
+import com.luoying.luochat.common.user.domain.entity.RoomFriend;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.domain.entity.UserApply;
 import com.luoying.luochat.common.user.domain.entity.UserFriend;
+import com.luoying.luochat.common.user.domain.enums.ApplyStatusEnum;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApplyReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendApproveReq;
 import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
@@ -21,9 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -46,6 +53,8 @@ public class FriendServiceImpl implements FriendService {
     @Resource
     private UserApplyDao userApplyDao;
 
+    @Resource
+    private RoomService roomService;
 
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
@@ -96,6 +105,27 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    @RedissonLock(key = "#uid")
+    public void applyApprove(Long uid, FriendApproveReq request) {
+        // 查询根据申请id查询是否有申请记录
+        UserApply userApply = userApplyDao.getById(request.getApplyId());
+        // 校验
+        AssertUtil.isNotEmpty(userApply, "不存在申请记录");
+        // 判断申请记录的targetId是否是自己
+        AssertUtil.equal(userApply.getTargetId(), uid, "不存在申请记录");
+        // 判断申请记录是否是待审批状态
+        AssertUtil.equal(userApply.getStatus(), ApplyStatusEnum.WAIT_APPROVAL.getCode(), "已同意好友申请");
+        // 同意申请
+        userApplyDao.agree(request.getApplyId());
+        // 创建双方好友关系
+        createFriend(uid, userApply.getUid());
+        // 创建一个聊天房间
+        RoomFriend roomFriend = roomService.createFriendRoom(Arrays.asList(uid, userApply.getUid()));
+        // todo 发送一条同意消息。。我们已经是好友了，开始聊天吧
+    }
+
+    @Override
     public CursorPageBaseResp<FriendResp> friendList(Long uid, CursorPageBaseReq request) {
         // 从用户联系人表（user_friend）中获取当前登录用户的好友列表 friendPage
         CursorPageBaseResp<UserFriend> friendPage = userFriendDao.getFriendPage(uid, request);
@@ -113,4 +143,18 @@ public class FriendServiceImpl implements FriendService {
         return CursorPageBaseResp.init(friendPage, FriendAdapter.buildFriend(friendPage.getList(), userList));
     }
 
+    /**
+     * 需要在user_friend表中添加两条记录，维护两者之间的好友关系
+     * @param uid
+     * @param targetUid
+     */
+    private void createFriend(Long uid, Long targetUid) {
+        UserFriend userFriend1 = new UserFriend();
+        userFriend1.setUid(uid);
+        userFriend1.setFriendUid(targetUid);
+        UserFriend userFriend2 = new UserFriend();
+        userFriend2.setUid(targetUid);
+        userFriend2.setFriendUid(uid);
+        userFriendDao.saveBatch(Lists.newArrayList(userFriend1, userFriend2));
+    }
 }

@@ -44,4 +44,14 @@ public class UserApplyDao extends ServiceImpl<UserApplyMapper, UserApply> {
                 .eq(UserApply::getReadStatus, UNREAD.getCode())
                 .count();
     }
+
+    /**
+     * 修改申请记录的状态为已同意
+     * @param applyId
+     */
+    public void agree(Long applyId) {
+        lambdaUpdate().set(UserApply::getStatus, ApplyStatusEnum.AGREE.getCode())
+                .eq(UserApply::getId, applyId)
+                .update();
+    }
 }
