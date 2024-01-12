@@ -6,6 +6,8 @@ import com.luoying.luochat.common.user.dao.UserDao;
 import com.luoying.luochat.common.user.dao.UserFriendDao;
 import com.luoying.luochat.common.user.domain.entity.User;
 import com.luoying.luochat.common.user.domain.entity.UserFriend;
+import com.luoying.luochat.common.user.domain.vo.req.FriendCheckReq;
+import com.luoying.luochat.common.user.domain.vo.resp.FriendCheckResp;
 import com.luoying.luochat.common.user.domain.vo.resp.FriendResp;
 import com.luoying.luochat.common.user.service.FriendService;
 import com.luoying.luochat.common.user.service.adapter.FriendAdapter;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -31,6 +34,25 @@ public class FriendServiceImpl implements FriendService {
     @Autowired
     private UserDao userDao;
 
+
+    @Override
+    public FriendCheckResp check(Long uid, FriendCheckReq request) {
+        // 根据uidList查询当前登录用户的好友friendList
+        List<UserFriend> friendList = userFriendDao.getByFriends(uid, request.getUidList());
+        // 遍历friendList取出所有的friendUid
+        Set<Long> friendUidSet = friendList.stream().map(UserFriend::getFriendUid).collect(Collectors.toSet());
+        // 组装friendCheckList
+        List<FriendCheckResp.FriendCheck> friendCheckList = request.getUidList().stream().map(friendUid -> {
+            FriendCheckResp.FriendCheck friendCheck = new FriendCheckResp.FriendCheck();
+            // 设置uid
+            friendCheck.setUid(friendUid);
+            // 判断friendUidSet是否包含请求中的friendUid，包含则是好友
+            friendCheck.setIsFriend(friendUidSet.contains(friendUid));
+            return friendCheck;
+        }).collect(Collectors.toList());
+        // 封装返回
+        return new FriendCheckResp(friendCheckList);
+    }
 
     @Override
     public CursorPageBaseResp<FriendResp> friendList(Long uid, CursorPageBaseReq request) {
